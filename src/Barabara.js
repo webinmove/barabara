@@ -65,7 +65,14 @@ class Barabara {
 
       try {
         const result = await controller[action](options, meta);
-        res.json(result);
+        if (typeof result === 'object') {
+          if (result.redirect) {
+            return res.redirect(result.redirect);
+          }
+          return res.json(result);
+        } else {
+          return res.send(result);
+        }
       } catch (e) {
         return next(e);
       }

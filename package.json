@@ -1,10 +1,10 @@
 {
   "name": "barabara",
   "version": "1.0.0",
-  "description": "Automatic express-router generator",
-  "main": "lib/Barabara.js",
+  "description": "Automatic express-router from generic controllers",
+  "main": "src/Barabara.js",
   "directories": {
-    "lib": "lib",
+    "src": "src",
     "test": "tests"
   },
   "scripts": {
@@ -39,7 +39,6 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "ci": "^1.0.0",
     "lodash": "^4.17.11",
     "to-slug-case": "^1.0.0"
   },

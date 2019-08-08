@@ -5,7 +5,7 @@
 [![npm version](https://img.shields.io/npm/v/barabara.svg)](https://www.npmjs.com/package/barabara)
 [![Dependency Status](https://img.shields.io/david/webinmove/barabara.svg?style=flat-square)](https://david-dm.org/webinmove/barabara)
 
-Automatic router for simple REST json api
+Automatic express-router from generic controllers
 
 Barabara will automatically create one or more Express router for you reading the content of your controller folder(s).
 
@@ -91,6 +91,13 @@ module.exports = {
   internal: () => { /* ... */ }
 };
 ```
+
+#### Return behaviors
+
+- If you return an object without `redirect` key in it, it will respond JSON
+- If you return an object with `redirect` key in it, it will redirect to the value
+- If you return a non-object, it will respond this non-object (html for example)
+
 *Note: not all the methods need to be implemented*
 
 `req.query`, `req.body`, `req.params` will be merged in `params` (in this order).
