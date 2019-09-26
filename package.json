@@ -13,7 +13,7 @@
     "test:lint": "semistandard --verbose | snazzy",
     "test:cover": "nyc --reporter=text-summary --reporter=html npm test",
     "test:coveralls": "nyc --reporter=text-lcov npm test | coveralls",
-    "test:all": "npm run test:lint && npm run test:cover"
+    "test:all": "npm run test:lint"
   },
   "repository": {
     "type": "git",
