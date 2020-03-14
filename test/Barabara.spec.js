@@ -46,6 +46,76 @@ describe('Barabara', () => {
     expect(handler).to.be.a('function');
   });
 
+  it('should create route handler with ability to redirect', async () => {
+    const controller = {
+      create: (options, meta) => {
+        return {
+          redirect: 'test'
+        };
+      }
+    };
+
+    const handler = barabara.createRouteHandler(controller, 'create');
+    let testResult = false;
+    const res = {
+      redirect: (path) => {
+        if (path === 'test') {
+          testResult = true;
+        }
+      }
+    };
+    await handler({}, res, () => {});
+
+    expect(handler).to.be.a('function');
+    expect(testResult).to.equal(true);
+  });
+
+  it('should create route handler with ability to return HTML', async () => {
+    const controller = {
+      create: (options, meta) => {
+        return '<html></html>';
+      }
+    };
+
+    const handler = barabara.createRouteHandler(controller, 'create');
+    let testResult = false;
+    const res = {
+      send: (html) => {
+        if (html === '<html></html>') {
+          testResult = true;
+        }
+      }
+    };
+    await handler({}, res, () => {});
+
+    expect(handler).to.be.a('function');
+    expect(testResult).to.equal(true);
+  });
+
+  it('should create route handler with ability to return JSON', async () => {
+    const controller = {
+      create: (options, meta) => {
+        return {
+          testString: 'isWorking'
+        };
+      }
+    };
+
+    const handler = barabara.createRouteHandler(controller, 'create');
+    let testResult = false;
+    const res = {
+      json: (json) => {
+        if (json.testString === 'isWorking') {
+          testResult = true;
+        }
+      }
+    };
+    await handler({}, res, () => {});
+
+    expect(handler).to.be.a('function');
+    expect(testResult).to.equal(true);
+  });
+
   it('should register the controller in the router', () => {
     const router = new Router();
     const controller = require('./mocks/test.js');
