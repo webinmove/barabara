@@ -2,7 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/webinmove/barabara.svg?style=svg)](https://circleci.com/gh/webinmove/barabara)
 [![Coverage Status](https://coveralls.io/repos/github/webinmove/barabara/badge.svg?branch=master)](https://coveralls.io/github/webinmove/barabara?branch=master)
-[![npm version](https://img.shields.io/npm/v/barabara.svg)](https://www.npmjs.com/package/barabara)
+[![npm version](https://img.shields.io/npm/v/@webinmove/barabara.svg)](https://www.npmjs.com/package/@webinmove/barabara)
 [![Dependency Status](https://img.shields.io/david/webinmove/barabara.svg?style=flat-square)](https://david-dm.org/webinmove/barabara)
 
 Automatic express-router from generic controllers
