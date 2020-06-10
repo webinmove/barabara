@@ -9,11 +9,12 @@
   },
   "scripts": {
     "format": "semistandard --fix",
-    "test": "mocha --recursive --reporter dot",
+    "test:spec": "NODE_ENV=test mocha --recursive",
     "test:lint": "semistandard --verbose | snazzy",
-    "test:cover": "nyc --reporter=text-summary --reporter=html npm test",
-    "test:coveralls": "nyc --reporter=text-lcov npm test | coveralls",
-    "test:all": "npm run test:lint && npm run test && npm run test:cover && npm run test:coveralls"
+    "test:cover": "nyc --reporter=lcov --reporter=text-summary npm run test:spec",
+    "test:coveralls": "nyc npm run test:spec && nyc report --reporter=text-lcov | coveralls",
+    "test": "npm run test:lint && npm run test:cover",
+    "test:ci": "npm run test:lint && npm run test:coveralls"
   },
   "repository": {
     "type": "git",
