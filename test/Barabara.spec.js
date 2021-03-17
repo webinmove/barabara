@@ -146,6 +146,7 @@ describe('Barabara', () => {
       methods: layer.route.methods
     }));
     // Should be sorted by the more
+
     expect(routes).to.deep.equal([
       { path: '/sub-path/sub-test', methods: { head: true } },
       { path: '/sub-path/sub-test/:id', methods: { head: true } },
@@ -156,13 +157,11 @@ describe('Barabara', () => {
       { path: '/sub-path/sub-test/:id', methods: { patch: true } },
       { path: '/sub-path/sub-test/:id', methods: { delete: true } },
       { path: '/', methods: { head: true } },
-      { path: '/:id', methods: { head: true } },
       { path: '/', methods: { get: true } },
-      { path: '/:id', methods: { get: true } },
       { path: '/', methods: { post: true } },
-      { path: '/:id', methods: { put: true } },
-      { path: '/:id', methods: { patch: true } },
-      { path: '/:id', methods: { delete: true } },
+      { path: '/', methods: { put: true } },
+      { path: '/', methods: { patch: true } },
+      { path: '/', methods: { delete: true } },
       { path: '/test', methods: { head: true } },
       { path: '/test/:id', methods: { head: true } },
       { path: '/test', methods: { get: true } },

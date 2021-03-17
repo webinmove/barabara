@@ -88,10 +88,10 @@ class Barabara {
       const verb = this.actionsMap[action].toLowerCase();
       let finalRoutes;
 
-      if (['head', 'get'].includes(verb)) {
+      if (['head', 'get'].includes(verb) && baseRoute !== '/') {
         // Need to define 2 routes ('/resource' & '/resource/:id')
         finalRoutes = [baseRoute, baseRoute.replace(/\/$/, '') + '/:id'];
-      } else if (['put', 'delete', 'patch'].indexOf(verb) !== -1) {
+      } else if (['put', 'delete', 'patch'].indexOf(verb) !== -1 && baseRoute !== '/') {
         // Need to have the id in the route ('/resource/:id')
         finalRoutes = [baseRoute.replace(/\/$/, '') + '/:id'];
       } else {
