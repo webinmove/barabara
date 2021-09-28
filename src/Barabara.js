@@ -14,8 +14,7 @@ class Barabara {
     return (
       filePath
         .substr(basePath.length)
-        .replace(/(\/index)?\.js$/i, '')
-        .replace(/(\/index)?\.ts$/i, '')
+        .replace(/(\/index)?(\.js|\.ts)$/i, '')
         .split('/')
         .map(toSlubCase)
         .join('/') || '/'
