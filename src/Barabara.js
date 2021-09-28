@@ -15,6 +15,7 @@ class Barabara {
       filePath
         .substr(basePath.length)
         .replace(/(\/index)?\.js$/i, '')
+        .replace(/(\/index)?\.ts$/i, '')
         .split('/')
         .map(toSlubCase)
         .join('/') || '/'
@@ -38,7 +39,7 @@ class Barabara {
         controllerFiles.push(...this.findControllers(fullPath));
       }
 
-      if (path.extname(file) === '.js') {
+      if (['.js', '.ts'].includes(path.extname(file))) {
         controllerFiles.push(fullPath);
       }
     });
@@ -54,14 +55,18 @@ class Barabara {
         options.files = req.files;
       }
 
-      const meta = _.reduce(req, (result, value, key) => {
-        // Additional req keys needed (e.q.: 'user')
-        if (metaList.indexOf(key) !== -1) {
-          result[key] = value;
-        }
+      const meta = _.reduce(
+        req,
+        (result, value, key) => {
+          // Additional req keys needed (e.q.: 'user')
+          if (metaList.indexOf(key) !== -1) {
+            result[key] = value;
+          }
 
-        return result;
-      }, {});
+          return result;
+        },
+        {}
+      );
 
       try {
         const result = await controller[action](options, meta);
@@ -91,7 +96,10 @@ class Barabara {
       if (['head', 'get'].includes(verb) && baseRoute !== '/') {
         // Need to define 2 routes ('/resource' & '/resource/:id')
         finalRoutes = [baseRoute, baseRoute.replace(/\/$/, '') + '/:id'];
-      } else if (['put', 'delete', 'patch'].indexOf(verb) !== -1 && baseRoute !== '/') {
+      } else if (
+        ['put', 'delete', 'patch'].indexOf(verb) !== -1 &&
+        baseRoute !== '/'
+      ) {
         // Need to have the id in the route ('/resource/:id')
         finalRoutes = [baseRoute.replace(/\/$/, '') + '/:id'];
       } else {

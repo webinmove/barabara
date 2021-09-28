@@ -33,7 +33,9 @@ describe('Barabara', () => {
     expect(barabara.findControllers(basePath)).to.have.members([
       path.join(basePath, '/index.js'),
       path.join(basePath, '/test.js'),
-      path.join(basePath, '/subPath/subTest.js')
+      path.join(basePath, '/subPath/subTest.js'),
+      path.join(basePath, '/typescript.ts'),
+      path.join(basePath, '/subPath/subTypescript.ts')
     ]);
   });
 
@@ -122,7 +124,7 @@ describe('Barabara', () => {
 
     barabara.registerController(router, '/test', controller);
 
-    const routes = router.stack.map(layer => ({
+    const routes = router.stack.map((layer) => ({
       path: layer.route.path,
       methods: layer.route.methods
     }));
@@ -141,7 +143,7 @@ describe('Barabara', () => {
 
   it('should create a new router with routes ordered by length', () => {
     const router = barabara.createRouter(path.join(__dirname, './mocks'));
-    const routes = router.stack.map(layer => ({
+    const routes = router.stack.map((layer) => ({
       path: layer.route.path,
       methods: layer.route.methods
     }));
@@ -156,6 +158,14 @@ describe('Barabara', () => {
       { path: '/sub-path/sub-test/:id', methods: { put: true } },
       { path: '/sub-path/sub-test/:id', methods: { patch: true } },
       { path: '/sub-path/sub-test/:id', methods: { delete: true } },
+      { path: '/sub-path/sub-typescript', methods: { head: true } },
+      { path: '/sub-path/sub-typescript/:id', methods: { head: true } },
+      { path: '/sub-path/sub-typescript', methods: { get: true } },
+      { path: '/sub-path/sub-typescript/:id', methods: { get: true } },
+      { path: '/sub-path/sub-typescript', methods: { post: true } },
+      { path: '/sub-path/sub-typescript/:id', methods: { put: true } },
+      { path: '/sub-path/sub-typescript/:id', methods: { patch: true } },
+      { path: '/sub-path/sub-typescript/:id', methods: { delete: true } },
       { path: '/', methods: { head: true } },
       { path: '/', methods: { get: true } },
       { path: '/', methods: { post: true } },
@@ -169,7 +179,15 @@ describe('Barabara', () => {
       { path: '/test', methods: { post: true } },
       { path: '/test/:id', methods: { put: true } },
       { path: '/test/:id', methods: { patch: true } },
-      { path: '/test/:id', methods: { delete: true } }
+      { path: '/test/:id', methods: { delete: true } },
+      { path: '/typescript', methods: { head: true } },
+      { path: '/typescript/:id', methods: { head: true } },
+      { path: '/typescript', methods: { get: true } },
+      { path: '/typescript/:id', methods: { get: true } },
+      { path: '/typescript', methods: { post: true } },
+      { path: '/typescript/:id', methods: { put: true } },
+      { path: '/typescript/:id', methods: { patch: true } },
+      { path: '/typescript/:id', methods: { delete: true } }
     ]);
   });
 });
