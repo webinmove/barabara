@@ -94,9 +94,11 @@ module.exports = {
 
 #### Return behaviors
 
-- If you return an object without `redirect` key in it, it will respond JSON
-- If you return an object with `redirect` key in it, it will redirect to the value
+- If you return an object without `barabara.redirect` key in it, it will respond normally
+- If you return an object with `barabara.redirect` key in it, it will redirect to the value
+- If you return an object with `barabara.contentType` and a `buffer`, it will respond with the right `Content-Type` header
 - If you return a non-object, it will respond this non-object (html for example)
+
 
 *Note: not all the methods need to be implemented*
 

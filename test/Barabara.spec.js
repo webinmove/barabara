@@ -52,7 +52,9 @@ describe('Barabara', () => {
     const controller = {
       create: (options, meta) => {
         return {
-          redirect: 'test'
+          barabara: {
+            redirect: 'test'
+          }
         };
       }
     };
@@ -116,6 +118,40 @@ describe('Barabara', () => {
 
     expect(handler).to.be.a('function');
     expect(testResult).to.equal(true);
+  });
+
+  it('should create route handler with ability to return a specific content type', async () => {
+    const controller = {
+      create: (options, meta) => {
+        return {
+          barabara: {
+            contentType: 'text/html; charset=UTF-8'
+          },
+          buffer: Buffer.from('This is a test')
+        };
+      }
+    };
+
+    const handler = barabara.createRouteHandler(controller, 'create');
+    let testResultA = false;
+    let testResultB = false;
+    const res = {
+      send: (content) => {
+        if (Buffer.from(content).toString() === Buffer.from('This is a test').toString()) {
+          testResultA = true;
+        }
+      },
+      set: (header, type) => {
+        if (header === 'Content-Type' && type === 'text/html; charset=UTF-8') {
+          testResultB = true;
+        }
+      }
+    };
+    await handler({}, res, () => {});
+
+    expect(handler).to.be.a('function');
+    expect(testResultA).to.equal(true);
+    expect(testResultB).to.equal(true);
   });
 
   it('should register the controller in the router', () => {

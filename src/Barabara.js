@@ -70,9 +70,17 @@ class Barabara {
       try {
         const result = await controller[action](options, meta);
         if (typeof result === 'object') {
-          if (result.redirect) {
-            return res.redirect(result.redirect);
+          if (typeof result.barabara === 'object') {
+            if (result.barabara.redirect) {
+              return res.redirect(result.barabara.redirect);
+            }
+
+            if (result.barabara.contentType) {
+              res.set('Content-Type', result.barabara.contentType);
+              return res.send(result.buffer);
+            }
           }
+
           return res.json(result);
         } else {
           return res.send(result);
