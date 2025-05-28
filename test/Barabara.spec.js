@@ -24,9 +24,7 @@ describe('Barabara', () => {
   it('should not care about uppercase when creating a route', () => {
     const filePath = path.join(basePath, '/SubPath/Test.js');
 
-    expect(barabara.routeFromPath(basePath, filePath)).to.equal(
-      '/sub-path/test'
-    );
+    expect(barabara.routeFromPath(basePath, filePath)).to.equal('/sub-path/test');
   });
 
   it('should find controllers in the base path', () => {
@@ -41,7 +39,7 @@ describe('Barabara', () => {
 
   it('should create route handler', () => {
     const controller = {
-      create: (options, meta) => {}
+      create: (_options, _meta) => {}
     };
 
     const handler = barabara.createRouteHandler(controller, 'create');
@@ -50,7 +48,7 @@ describe('Barabara', () => {
 
   it('should create route handler with ability to redirect', async () => {
     const controller = {
-      create: (options, meta) => {
+      create: (_options, _meta) => {
         return {
           barabara: {
             redirect: 'test'
@@ -76,7 +74,7 @@ describe('Barabara', () => {
 
   it('should create route handler with ability to return HTML', async () => {
     const controller = {
-      create: (options, meta) => {
+      create: (_options, _meta) => {
         return '<html></html>';
       }
     };
@@ -98,7 +96,7 @@ describe('Barabara', () => {
 
   it('should create route handler with ability to return JSON', async () => {
     const controller = {
-      create: (options, meta) => {
+      create: (_options, _meta) => {
         return {
           testString: 'isWorking'
         };
@@ -122,7 +120,7 @@ describe('Barabara', () => {
 
   it('should create route handler with ability to return a specific content type', async () => {
     const controller = {
-      create: (options, meta) => {
+      create: (_options, _meta) => {
         return {
           barabara: {
             contentType: 'text/html; charset=UTF-8'
@@ -225,5 +223,171 @@ describe('Barabara', () => {
       { path: '/typescript/:id', methods: { patch: true } },
       { path: '/typescript/:id', methods: { delete: true } }
     ]);
+  });
+});
+describe('Barabara OpenAPI', () => {
+  const actionsMap = {
+    read: 'get',
+    create: 'post',
+    update: 'put'
+  };
+
+  it('should initialize with OpenAPI configuration', () => {
+    const openApiConfig = {
+      title: 'Test API',
+      version: '1.0.0',
+      description: 'Test API description',
+      servers: [{ url: 'http://localhost:3000' }]
+    };
+
+    const barabara = new Barabara(Router, actionsMap, openApiConfig);
+
+    expect(barabara.openApi).to.be.an('object');
+    expect(barabara.openApi.info.title).to.equal('Test API');
+    expect(barabara.openApi.info.version).to.equal('1.0.0');
+    expect(barabara.openApi.info.description).to.equal('Test API description');
+    expect(barabara.openApi.servers).to.deep.equal([{ url: 'http://localhost:3000' }]);
+  });
+
+  it('should set openApi to null when openApi parameter is false', () => {
+    const barabara = new Barabara(Router, actionsMap, false);
+    expect(barabara.openApi).to.equal(null);
+  });
+
+  it('should throw error for invalid OpenAPI configuration', () => {
+    // Missing title
+    expect(() => new Barabara(Router, actionsMap, {
+      version: '1.0.0',
+      description: 'Test API',
+      servers: []
+    })).to.throw('OpenAPI title must be present and be a string');
+
+    // Missing version
+    expect(() => new Barabara(Router, actionsMap, {
+      title: 'Test API',
+      description: 'Test API',
+      servers: []
+    })).to.throw('OpenAPI version must be present and be a string');
+
+    // Missing description
+    expect(() => new Barabara(Router, actionsMap, {
+      title: 'Test API',
+      version: '1.0.0',
+      servers: []
+    })).to.throw('OpenAPI description must be present and be a string');
+
+    // Missing servers
+    expect(() => new Barabara(Router, actionsMap, {
+      title: 'Test API',
+      version: '1.0.0',
+      description: 'Test API'
+    })).to.throw('OpenAPI servers must be present and be an array');
+  });
+
+  it('should extract security requirements from OpenAPI config', () => {
+    const openApiConfig = {
+      title: 'Test API',
+      version: '1.0.0',
+      description: 'Test API description',
+      servers: [],
+      security: {
+        bearerAuth: {
+          requirements: ['read:api', 'write:api']
+        },
+        apiKeyAuth: {
+          requirements: ['api_key']
+        }
+      }
+    };
+
+    const barabara = new Barabara(Router, actionsMap, openApiConfig);
+
+    expect(barabara.openApi.security).to.deep.equal({
+      bearerAuth: ['read:api', 'write:api'],
+      apiKeyAuth: ['api_key']
+    });
+  });
+
+  it('should create router with OpenAPI endpoint', () => {
+    const openApiConfig = {
+      title: 'Test API',
+      version: '1.0.0',
+      description: 'Test API description',
+      servers: [{ url: 'http://localhost:3000' }]
+    };
+
+    const barabara = new Barabara(Router, actionsMap, openApiConfig);
+    const router = barabara.createRouter(path.join(__dirname, './mocks'));
+
+    // Find the OpenAPI endpoint in the router stack
+    const openApiRoute = router.stack.find(layer =>
+      layer.route && layer.route.path === '/openapi' && layer.route.methods.get);
+
+    expect(openApiRoute).to.be.an('object');
+    expect(openApiRoute.route.path).to.equal('/openapi');
+    expect(openApiRoute.route.methods.get).to.equal(true);
+    expect(openApiRoute.route.stack[0].handle).to.be.a('function');
+  });
+
+  it('should throw error for invalid OpenAPI components in controller', () => {
+    const openApiConfig = {
+      title: 'Test API',
+      version: '1.0.0',
+      description: 'Test API description',
+      servers: [{ url: 'http://localhost:3000' }]
+    };
+
+    const barabara = new Barabara(Router, actionsMap, openApiConfig);
+    const router = new Router();
+
+    const controllerWithInvalidComponents = {
+      read: () => ({}),
+      openApi: {
+        read: { summary: 'Get test data' },
+        components: 'invalid' // Should be an object
+      }
+    };
+
+    expect(() => barabara.registerController(router, '/test', controllerWithInvalidComponents, [])).to
+      .throw('OpenAPI components for action read in controller /test must be an object');
+
+    const controllerWithInvalidSchemas = {
+      read: () => ({}),
+      openApi: {
+        read: { summary: 'Get test data' },
+        components: {
+          schemas: 'invalid' // Should be an object
+        }
+      }
+    };
+
+    expect(() => barabara.registerController(router, '/test', controllerWithInvalidSchemas, [])).to
+      .throw('OpenAPI schemas for action read in controller /test must be an object');
+
+    const controllerWithInvalidResponses = {
+      read: () => ({}),
+      openApi: {
+        read: { summary: 'Get test data' },
+        components: {
+          responses: 'invalid' // Should be an object
+        }
+      }
+    };
+
+    expect(() => barabara.registerController(router, '/test', controllerWithInvalidResponses, [])).to
+      .throw('OpenAPI responses for action read in controller /test must be an object');
+
+    const controllerWithInvalidParameters = {
+      read: () => ({}),
+      openApi: {
+        read: { summary: 'Get test data' },
+        components: {
+          parameters: 'invalid' // Should be an object
+        }
+      }
+    };
+
+    expect(() => barabara.registerController(router, '/test', controllerWithInvalidParameters, [])).to
+      .throw('OpenAPI parameters for action read in controller /test must be an object');
   });
 });
