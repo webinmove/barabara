@@ -4,10 +4,85 @@ const toSlubCase = require('to-slug-case');
 const fs = require('fs');
 const path = require('path');
 
+function extractOpenApiSecurityRequirements (security) {
+  const securityRequirements = {};
+
+  for (const key in security) {
+    if (Object.prototype.hasOwnProperty.call(security, key)) {
+      securityRequirements[key] = security[key].requirements || [];
+    }
+  }
+
+  return securityRequirements;
+}
+
+const buildOpenApiBaseObject = (openApiParams) => {
+  if (typeof openApiParams !== 'object') {
+    throw new Error('OpenAPI parameters must be present and be an object');
+  }
+  if (!openApiParams.title || typeof openApiParams.title !== 'string') {
+    throw new Error('OpenAPI title must be present and be a string');
+  }
+  if (!openApiParams.version || typeof openApiParams.version !== 'string') {
+    throw new Error('OpenAPI version must be present and be a string');
+  }
+  if (!openApiParams.description || typeof openApiParams.description !== 'string') {
+    throw new Error('OpenAPI description must be present and be a string');
+  }
+  if (
+    openApiParams.termsOfService &&
+    typeof openApiParams.termsOfService !== 'string'
+  ) {
+    throw new Error('OpenAPI termsOfService must be a string');
+  }
+  if (openApiParams.contact && typeof openApiParams.contact !== 'object') {
+    throw new Error('OpenAPI contact must be an object');
+  }
+  if (openApiParams.license && typeof openApiParams.license !== 'object') {
+    throw new Error('OpenAPI license must be an object');
+  }
+  if (!openApiParams.servers || !Array.isArray(openApiParams.servers)) {
+    throw new Error('OpenAPI servers must be present and be an array');
+  }
+  if (openApiParams.tags && !Array.isArray(openApiParams.tags)) {
+    throw new Error('OpenAPI tags must be an array');
+  }
+  if (openApiParams.security && typeof openApiParams.security !== 'object') {
+    throw new Error('OpenAPI security must be an object');
+  }
+
+  return {
+    openapi: '3.0.1',
+    info: {
+      title: openApiParams.title,
+      version: openApiParams.version,
+      description: openApiParams.description,
+      termsOfService: openApiParams.termsOfService || undefined,
+      contact: openApiParams.contact || undefined,
+      license: openApiParams.license || undefined
+    },
+    servers: openApiParams.servers || [],
+    tags: openApiParams.tags || [],
+    paths: {},
+    components: {
+      schemas: {},
+      responses: {},
+      parameters: {},
+      securitySchemes: openApiParams.security ? openApiParams.security : {}
+    },
+    security: openApiParams.security ? extractOpenApiSecurityRequirements(openApiParams.security) : {}
+  };
+};
+
 class Barabara {
-  constructor (Router, actionsMap) {
+  constructor (Router, actionsMap, openApi = false) {
     this.Router = Router;
     this.actionsMap = actionsMap;
+    if (openApi !== false) {
+      this.openApi = buildOpenApiBaseObject(openApi);
+    } else {
+      this.openApi = null;
+    }
   }
 
   routeFromPath (basePath, filePath) {
@@ -120,6 +195,58 @@ class Barabara {
       );
       // Assign routeHandler to routes
       finalRoutes.forEach((finalRoute) => {
+        if (controller.openApi && this.openApi) {
+          const openApiPath = finalRoute.replace(/\/:id$/, '/{id}');
+          if (!this.openApi.paths[openApiPath]) {
+            this.openApi.paths[openApiPath] = {};
+          }
+
+          if (controller.openApi[action]) {
+            this.openApi.paths[openApiPath][verb] = Object.assign({}, controller.openApi[action]);
+            this.openApi.paths[openApiPath][verb].operationId =
+            `${toSlubCase(baseRoute)}_${action}${finalRoute.includes('/:id') ? '_id' : ''}`;
+          }
+
+          if (controller.openApi.components) {
+            if (typeof controller.openApi.components !== 'object') {
+              throw new Error(`OpenAPI components for action ${action} in controller ${baseRoute} must be an object`);
+            }
+
+            if (controller.openApi.components.schemas) {
+              if (typeof controller.openApi.components.schemas !== 'object') {
+                throw new Error(`OpenAPI schemas for action ${action} in controller ${baseRoute} must be an object`);
+              }
+
+              Object.assign(
+                this.openApi.components.schemas,
+                controller.openApi.components.schemas || {}
+              );
+            }
+
+            if (controller.openApi.components.responses) {
+              if (typeof controller.openApi.components.responses !== 'object') {
+                throw new Error(`OpenAPI responses for action ${action} in controller ${baseRoute} must be an object`);
+              }
+
+              Object.assign(
+                this.openApi.components.responses,
+                controller.openApi.components.responses || {}
+              );
+            }
+
+            if (controller.openApi.components.parameters) {
+              if (typeof controller.openApi.components.parameters !== 'object') {
+                throw new Error(`OpenAPI parameters for action ${action} in controller ${baseRoute} must be an object`);
+              }
+
+              Object.assign(
+                this.openApi.components.parameters,
+                controller.openApi.components.parameters || {}
+              );
+            }
+          }
+        }
+
         router[verb](finalRoute, routeHandler);
       });
     });
@@ -151,6 +278,13 @@ class Barabara {
           metaList
         );
       });
+
+    if (this.openApi) {
+      // Add the OpenAPI documentation
+      router.get('/openapi', (_req, res) => {
+        res.json(this.openApi);
+      });
+    }
 
     return router;
   }
