@@ -152,6 +152,9 @@ class Barabara {
 
             if (result.barabara.contentType) {
               res.set('Content-Type', result.barabara.contentType);
+              if (result.barabara.contentDisposition) {
+                res.set('Content-Disposition', result.barabara.contentDisposition);
+              }
               return res.send(result.buffer);
             }
           }

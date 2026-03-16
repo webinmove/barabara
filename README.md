@@ -98,7 +98,25 @@ module.exports = {
 - If you return an object without `barabara.redirect` key in it, it will respond normally
 - If you return an object with `barabara.redirect` key in it, it will redirect to the value
 - If you return an object with `barabara.contentType` and a `buffer`, it will respond with the right `Content-Type` header
+- If you return an object with `barabara.contentType`, `barabara.contentDisposition` and a `buffer`, it will also set the `Content-Disposition` header (useful for file downloads)
 - If you return a non-object, it will respond this non-object (html for example)
+
+Example of binary response with download filename:
+
+```js
+module.exports = {
+  create: async (params, meta) => {
+    const buffer = await generateSpreadsheet(params);
+    return {
+      barabara: {
+        contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        contentDisposition: 'attachment; filename="report.xlsx"'
+      },
+      buffer
+    };
+  }
+};
+```
 
 *Note: not all the methods need to be implemented*
 
