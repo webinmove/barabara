@@ -1,6 +1,6 @@
 {
   "name": "@webinmove/barabara",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Automatic express-router from generic controllers",
   "main": "src/Barabara.js",
   "directories": {
