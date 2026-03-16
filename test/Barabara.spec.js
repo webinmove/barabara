@@ -152,6 +152,60 @@ describe('Barabara', () => {
     expect(testResultB).to.equal(true);
   });
 
+  it('should create route handler with ability to return a specific content type and content disposition', async () => {
+    const expectedDisposition = 'attachment; filename="report.xlsx"';
+    const controller = {
+      create: (_options, _meta) => {
+        return {
+          barabara: {
+            contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            contentDisposition: expectedDisposition
+          },
+          buffer: Buffer.from('fake-xlsx')
+        };
+      }
+    };
+
+    const handler = barabara.createRouteHandler(controller, 'create');
+    const headers = {};
+    let sentBuffer = null;
+    const res = {
+      send: (content) => { sentBuffer = content; },
+      set: (header, value) => { headers[header] = value; }
+    };
+    await handler({}, res, () => {});
+
+    expect(sentBuffer.toString()).to.equal('fake-xlsx');
+    expect(headers['Content-Type']).to.equal('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    expect(headers['Content-Disposition']).to.equal(expectedDisposition);
+  });
+
+  it('should not set content disposition when not provided', async () => {
+    const controller = {
+      create: (_options, _meta) => {
+        return {
+          barabara: {
+            contentType: 'application/pdf'
+          },
+          buffer: Buffer.from('fake-pdf')
+        };
+      }
+    };
+
+    const handler = barabara.createRouteHandler(controller, 'create');
+    const headers = {};
+    let sentBuffer = null;
+    const res = {
+      send: (content) => { sentBuffer = content; },
+      set: (header, value) => { headers[header] = value; }
+    };
+    await handler({}, res, () => {});
+
+    expect(sentBuffer.toString()).to.equal('fake-pdf');
+    expect(headers['Content-Type']).to.equal('application/pdf');
+    expect(headers).to.not.have.property('Content-Disposition');
+  });
+
   it('should register the controller in the router', () => {
     const router = new Router();
     const controller = require('./mocks/test.js');
