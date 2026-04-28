@@ -2,14 +2,26 @@
   "name": "@webinmove/barabara",
   "version": "1.2.2",
   "description": "Automatic express-router from generic controllers",
-  "main": "src/Barabara.js",
+  "main": "./dist/Barabara.cjs",
+  "module": "./dist/Barabara.mjs",
+  "exports": {
+    ".": {
+      "import": "./dist/Barabara.mjs",
+      "require": "./dist/Barabara.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "directories": {
     "src": "src",
     "test": "tests"
   },
   "scripts": {
+    "build": "tsup",
+    "prepublishOnly": "npm run build",
     "format": "semistandard --fix",
-    "test:spec": "NODE_ENV=test mocha --recursive",
+    "test:spec": "npm run build && NODE_ENV=test mocha --recursive",
     "test:lint": "semistandard --verbose | snazzy",
     "test:cover": "nyc --reporter=lcov --reporter=text-summary npm run test:spec",
     "test:coveralls": "nyc npm run test:spec && nyc report --reporter=text-lcov | coveralls",
@@ -49,10 +61,12 @@
     "express": "^4.16.4",
     "mocha": "^11.5.0",
     "nyc": "^15.0.0",
-    "snazzy": "^8.0.0"
+    "snazzy": "^8.0.0",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3"
   },
   "engines": {
-    "node": ">=8.3"
+    "node": ">=12.22"
   },
   "nyc": {
     "include": [

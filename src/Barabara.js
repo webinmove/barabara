@@ -1,8 +1,10 @@
-const _ = require('lodash');
+import _ from 'lodash';
 // Not using lodash kebabCase since it transaform 'v1' to 'v-1'
-const toSlubCase = require('to-slug-case');
-const fs = require('fs');
-const path = require('path');
+import toSlubCase from 'to-slug-case';
+import fs from 'fs';
+import path from 'path';
+import { pathToFileURL } from 'url';
+import { createRequire } from 'module';
 
 function extractOpenApiSecurityRequirements (security) {
   const securityRequirements = {};
@@ -255,11 +257,12 @@ class Barabara {
     });
   }
 
-  createRouter (controllersBasePath, metaList = []) {
+  async createRouter (controllersBasePath, metaList = []) {
+    const _require = createRequire(import.meta.url);
     const controllerPaths = this.findControllers(controllersBasePath);
     const router = new this.Router();
     // Need to sort to have longest/most-specific route first
-    controllerPaths
+    const sortedControllers = controllerPaths
       .map((controllerPath) => {
         return {
           path: controllerPath,
@@ -271,16 +274,19 @@ class Barabara {
         const partsB = controllerInfoB.route.split('/');
         // Most specific route first (descending sort)
         return partsB.length - partsA.length;
-      })
-      .forEach((controllerInfo) => {
-        const controller = require(controllerInfo.path);
-        this.registerController(
-          router,
-          controllerInfo.route,
-          controller,
-          metaList
-        );
       });
+
+    for (const controllerInfo of sortedControllers) {
+      const controller = path.extname(controllerInfo.path) === '.mjs'
+        ? (await import(pathToFileURL(controllerInfo.path).href)).default
+        : _require(controllerInfo.path);
+      this.registerController(
+        router,
+        controllerInfo.route,
+        controller,
+        metaList
+      );
+    }
 
     if (this.openApi) {
       // Add the OpenAPI documentation
@@ -293,6 +299,4 @@ class Barabara {
   }
 }
 
-module.exports = {
-  Barabara
-};
+export { Barabara };

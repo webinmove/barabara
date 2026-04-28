@@ -1,5 +1,5 @@
 const expect = require('chai').expect;
-const { Barabara } = require('../src/Barabara');
+const { Barabara } = require('../dist/Barabara.cjs');
 const { Router } = require('express');
 const path = require('path');
 
@@ -229,8 +229,8 @@ describe('Barabara', () => {
     ]);
   });
 
-  it('should create a new router with routes ordered by length', () => {
-    const router = barabara.createRouter(path.join(__dirname, './mocks'));
+  it('should create a new router with routes ordered by length', async () => {
+    const router = await barabara.createRouter(path.join(__dirname, './mocks'));
     const routes = router.stack.map((layer) => ({
       path: layer.route.path,
       methods: layer.route.methods
@@ -362,7 +362,7 @@ describe('Barabara OpenAPI', () => {
     });
   });
 
-  it('should create router with OpenAPI endpoint', () => {
+  it('should create router with OpenAPI endpoint', async () => {
     const openApiConfig = {
       title: 'Test API',
       version: '1.0.0',
@@ -371,7 +371,7 @@ describe('Barabara OpenAPI', () => {
     };
 
     const barabara = new Barabara(Router, actionsMap, openApiConfig);
-    const router = barabara.createRouter(path.join(__dirname, './mocks'));
+    const router = await barabara.createRouter(path.join(__dirname, './mocks'));
 
     // Find the OpenAPI endpoint in the router stack
     const openApiRoute = router.stack.find(layer =>
@@ -708,7 +708,7 @@ describe('Barabara OpenAPI', () => {
     expect(response.content).to.have.property('application/xml');
   });
 
-  it('should handle createRouter with openapi endpoint', () => {
+  it('should handle createRouter with openapi endpoint', async () => {
     const openApiConfig = {
       title: 'Test API',
       version: '1.0.0',
@@ -723,7 +723,7 @@ describe('Barabara OpenAPI', () => {
     const originalFindControllers = barabara.findControllers;
     barabara.findControllers = () => [];
 
-    const router = barabara.createRouter(mockRoutePath);
+    const router = await barabara.createRouter(mockRoutePath);
 
     // Restore original method
     barabara.findControllers = originalFindControllers;
@@ -800,9 +800,7 @@ describe('Barabara Error Handling', () => {
 
     const handler = barabara.createRouteHandler(controller, 'create', []);
     const mockFiles = {
-      data: [
-        { filename: 'test.jpg', mimetype: 'image/jpeg', size: 1024 }
-      ]
+      data: [{ filename: 'test.jpg', mimetype: 'image/jpeg', size: 1024 }]
     };
 
     const req = {
